@@ -1,0 +1,183 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Hyper Pro Host - Advanced Uploader</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <link href="https://fonts.googleapis.com/css2?family=Plus+Jakarta+Sans:wght@400;600;700&display=swap" rel="stylesheet">
+    <style>
+        body { background-color: #020617; color: #f8fafc; font-family: 'Plus Jakarta Sans', sans-serif; }
+        .glass { background: rgba(15, 23, 42, 0.6); backdrop-filter: blur(12px); border: 1px solid rgba(255,255,255,0.1); }
+        .progress-fill { transition: width 0.4s cubic-bezier(0.4, 0, 0.2, 1); }
+        .upload-item { animation: slideIn 0.3s ease-out forwards; }
+        @keyframes slideIn { from { opacity: 0; transform: translateY(10px); } to { opacity: 1; transform: translateY(0); } }
+    </style>
+</head>
+<body class="min-h-screen">
+
+    <nav class="p-6 border-b border-white/5 glass sticky top-0 z-50">
+        <div class="max-w-6xl mx-auto flex justify-between items-center">
+            <h1 class="text-2xl font-bold text-blue-500">HYPER<span class="text-white">PRO</span></h1>
+            <button onclick="showSection('dashboard-section')" class="text-sm font-semibold bg-blue-600/10 text-blue-400 px-4 py-2 rounded-xl border border-blue-500/20">Manage Sites</button>
+        </div>
+    </nav>
+
+    <main class="max-w-4xl mx-auto p-6 mt-10">
+        
+        <section id="upload-section" class="space-y-8">
+            <div class="text-center space-y-2">
+                <h2 class="text-4xl font-extrabold italic">LIVE <span class="text-blue-500 underline">DEPLOYMENT</span></h2>
+                <p class="text-slate-400">Watch your project go live in real-time.</p>
+            </div>
+
+            <div class="glass p-8 rounded-[2.5rem] border-white/10 space-y-6">
+                <div class="grid grid-cols-1 md:grid-cols-2 gap-4">
+                    <input type="text" id="user-id" placeholder="Your User ID" class="bg-slate-950 border border-slate-800 p-4 rounded-2xl outline-none focus:border-blue-500">
+                    <input type="text" id="project-name" placeholder="Project Name" class="bg-slate-950 border border-slate-800 p-4 rounded-2xl outline-none focus:border-blue-500">
+                </div>
+
+                <div class="border-2 border-dashed border-slate-800 rounded-[2rem] p-10 text-center hover:border-blue-500 transition cursor-pointer" onclick="document.getElementById('file-input').click()">
+                    <input type="file" id="file-input" class="hidden" multiple webkitdirectory>
+                    <p id="file-status" class="text-slate-400 font-medium">Drop your folder here or <span class="text-blue-500">Browse</span></p>
+                </div>
+
+                <div id="upload-tracker" class="hidden space-y-4 bg-slate-950/50 p-6 rounded-3xl border border-white/5">
+                    <div class="flex justify-between items-center text-sm mb-2">
+                        <span id="overall-status" class="font-bold text-blue-400">Uploading...</span>
+                        <span id="overall-percent" class="text-slate-500 font-mono">0%</span>
+                    </div>
+                    <div class="w-full bg-slate-800 h-3 rounded-full overflow-hidden">
+                        <div id="main-progress-bar" class="progress-fill h-full bg-blue-500 w-0"></div>
+                    </div>
+                    <div id="file-logs" class="max-h-40 overflow-y-auto space-y-2 text-xs font-mono scrollbar-hide">
+                        </div>
+                </div>
+
+                <button id="upload-btn" onclick="startDeployment()" class="w-full bg-blue-600 p-5 rounded-2xl font-bold text-xl hover:bg-blue-500 transition shadow-lg shadow-blue-600/20">START DEPLOYMENT</button>
+            </div>
+        </section>
+
+        <section id="dashboard-section" class="hidden space-y-8">
+            <button onclick="showSection('upload-section')" class="text-slate-500 hover:text-white transition">← Go Back</button>
+            <div class="glass p-8 rounded-3xl space-y-6">
+                <h3 class="text-2xl font-bold">Search Projects</h3>
+                <div class="flex gap-3">
+                    <input type="text" id="search-id" class="flex-1 bg-slate-900 border border-slate-800 p-4 rounded-xl outline-none">
+                    <button onclick="loadUserProjects()" class="bg-blue-600 px-8 rounded-xl font-bold">Find</button>
+                </div>
+                <div id="project-list" class="grid gap-4 mt-6"></div>
+            </div>
+        </section>
+
+    </main>
+
+    <script>
+        const G_T = "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";
+        const G_R = "hyper-pro-host/hyper-pro-web-host";
+
+        function showSection(id) {
+            document.querySelectorAll('section').forEach(s => s.classList.add('hidden'));
+            document.getElementById(id).classList.remove('hidden');
+        }
+
+        async function startDeployment() {
+            const uid = document.getElementById('user-id').value.trim();
+            const pname = document.getElementById('project-name').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '');
+            const files = document.getElementById('file-input').files;
+            
+            if(!uid || !pname || files.length === 0) return alert("Please fill everything!");
+
+            const tracker = document.getElementById('upload-tracker');
+            const logs = document.getElementById('file-logs');
+            const btn = document.getElementById('upload-btn');
+            
+            tracker.classList.remove('hidden');
+            logs.innerHTML = "";
+            btn.disabled = true;
+            btn.innerText = "Deploying...";
+
+            let successCount = 0;
+            let totalFiles = files.length;
+
+            for (let i = 0; i < totalFiles; i++) {
+                const file = files[i];
+                const path = `${uid}_${pname}/${file.webkitRelativePath || file.name}`;
+                
+                // Add log entry
+                const logEntry = document.createElement('div');
+                logEntry.className = "upload-item flex justify-between text-slate-400";
+                logEntry.innerHTML = `<span>Uploading: ${file.name}</span><span class="status text-blue-500">WAIT</span>`;
+                logs.prepend(logEntry);
+
+                try {
+                    const base64 = await toBase64(file);
+                    const res = await fetch(`https://api.github.com/repos/${G_R}/contents/${path}`, {
+                        method: 'PUT',
+                        headers: { 'Authorization': `token ${G_T}`, 'Content-Type': 'application/json' },
+                        body: JSON.stringify({ message: `Deploy ${path}`, content: base64 })
+                    });
+
+                    if(res.ok) {
+                        successCount++;
+                        logEntry.querySelector('.status').innerText = "DONE";
+                        logEntry.querySelector('.status').className = "status text-green-500";
+                    } else {
+                        throw new Error();
+                    }
+                } catch (e) {
+                    logEntry.querySelector('.status').innerText = "FAILED";
+                    logEntry.querySelector('.status').className = "status text-red-500";
+                }
+
+                // Update Progress Bar
+                const progress = Math.round(( (i + 1) / totalFiles) * 100);
+                document.getElementById('main-progress-bar').style.width = progress + "%";
+                document.getElementById('overall-percent').innerText = progress + "%";
+            }
+
+            document.getElementById('overall-status').innerText = "Deployment Complete!";
+            document.getElementById('overall-status').className = "font-bold text-green-400";
+            btn.innerText = "DEPLOYMENT FINISHED";
+            
+            setTimeout(() => {
+                alert(`Successfully deployed ${successCount} out of ${totalFiles} files!`);
+            }, 500);
+        }
+
+        function toBase64(file) {
+            return new Promise((r, j) => {
+                const reader = new FileReader();
+                reader.readAsDataURL(file);
+                reader.onload = () => r(reader.result.split(',')[1]);
+                reader.onerror = j;
+            });
+        }
+
+        async function loadUserProjects() {
+            const uid = document.getElementById('search-id').value.trim();
+            const list = document.getElementById('project-list');
+            list.innerHTML = "Searching...";
+
+            const res = await fetch(`https://api.github.com/repos/${G_R}/contents/`, {
+                headers: { 'Authorization': `token ${G_T}` }
+            });
+            const data = await res.json();
+            list.innerHTML = "";
+
+            data.filter(i => i.type === 'dir' && i.name.startsWith(uid + "_")).forEach(f => {
+                const liveLink = `https://hyper-pro-host.github.io/hyper-pro-web-host/${f.name}/index.html`;
+                list.innerHTML += `
+                    <div class="glass p-4 rounded-xl flex justify-between items-center border-white/5">
+                        <span class="font-bold text-blue-400">${f.name.split('_')[1]}</span>
+                        <div class="flex gap-2">
+                            <a href="${liveLink}" target="_blank" class="text-xs bg-blue-500/20 text-blue-400 px-3 py-1 rounded-lg">Live</a>
+                            <button onclick="navigator.clipboard.writeText('${liveLink}'); alert('Copied!')" class="text-xs bg-slate-800 text-slate-300 px-3 py-1 rounded-lg">Copy</button>
+                        </div>
+                    </div>
+                `;
+            });
+        }
+    </script>
+</body>
+</html>
