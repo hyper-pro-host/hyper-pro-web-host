@@ -3,53 +3,67 @@
 <head>
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
-    <title>Hyper Pro Web Host - Live</title>
+    <title>Hyper Pro Web Host</title>
     <style>
-        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #f0f2f5; margin: 0; padding: 20px; }
-        .container { max-width: 800px; margin: auto; padding: 30px; background: white; border-radius: 10px; box-shadow: 0 4px 15px rgba(0,0,0,0.1); }
+        body { font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif; background-color: #eef2f5; margin: 0; padding: 20px; }
+        .container { max-width: 800px; margin: auto; padding: 30px; background: white; border-radius: 12px; box-shadow: 0 5px 20px rgba(0,0,0,0.1); }
         h1, h2 { color: #1a73e8; text-align: center; }
-        input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #ccc; border-radius: 5px; box-sizing: border-box; font-size: 16px; }
-        button { background-color: #1a73e8; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.3s; }
+        input, button { width: 100%; padding: 12px; margin: 10px 0; border: 1px solid #cbd5e1; border-radius: 6px; box-sizing: border-box; font-size: 16px; }
+        input:focus { border-color: #1a73e8; outline: none; }
+        button { background-color: #1a73e8; color: white; border: none; cursor: pointer; font-weight: bold; transition: 0.2s; }
         button:hover { background-color: #1557b0; }
-        .danger-btn { background-color: #dc3545; }
-        .danger-btn:hover { background-color: #c82333; }
+        .danger-btn { background-color: #ef4444; }
+        .danger-btn:hover { background-color: #dc2626; }
+        .success-btn { background-color: #10b981; }
+        .success-btn:hover { background-color: #059669; }
         .hidden { display: none; }
-        .project-card { border: 1px solid #e0e0e0; padding: 20px; margin-top: 20px; border-radius: 8px; background-color: #fcfcfc; }
-        .file-upload-area { border: 2px dashed #1a73e8; padding: 20px; text-align: center; margin-top: 15px; background: #f8faff; border-radius: 5px; }
-        .live-link { display: inline-block; margin-top: 10px; padding: 10px; background: #e6f4ea; color: #137333; text-decoration: none; border-radius: 5px; font-weight: bold; }
-        #loading { text-align: center; color: #f59e0b; font-weight: bold; display: none; }
+        .project-card { border: 1px solid #e2e8f0; padding: 20px; margin-top: 20px; border-radius: 10px; background-color: #f8fafc; }
+        .file-upload-area { border: 2px dashed #3b82f6; padding: 20px; text-align: center; margin-top: 15px; background: #eff6ff; border-radius: 8px; }
+        .live-link { display: inline-block; margin-top: 10px; padding: 10px 15px; background: #dcfce7; color: #166534; text-decoration: none; border-radius: 6px; font-weight: bold; border: 1px solid #bbf7d0; }
+        .live-link:hover { background: #bbf7d0; }
+        
+        /* Global Loader */
+        #overlay { position: fixed; top: 0; left: 0; width: 100%; height: 100%; background: rgba(255,255,255,0.9); z-index: 1000; display: none; flex-direction: column; justify-content: center; align-items: center; }
+        .spinner { border: 8px solid #f3f3f3; border-top: 8px solid #1a73e8; border-radius: 50%; width: 60px; height: 60px; animation: spin 1s linear infinite; }
+        @keyframes spin { 0% { transform: rotate(0deg); } 100% { transform: rotate(360deg); } }
+        #loader-text { margin-top: 20px; font-weight: bold; color: #1a73e8; font-size: 18px; }
     </style>
 </head>
 <body>
 
+<!-- Loading Overlay -->
+<div id="overlay">
+    <div class="spinner"></div>
+    <div id="loader-text">Processing... Please wait!</div>
+</div>
+
 <div class="container">
     <h1>🚀 Hyper Pro Web Host</h1>
 
-    <!-- Login System -->
+    <!-- Login/Register Section -->
     <div id="auth-section">
         <h2>Login to your account</h2>
         <input type="email" id="email" placeholder="Email Address" required>
         <input type="password" id="password" placeholder="Password" required>
         <button id="login-btn">Login</button>
-        <button id="register-btn" style="background-color: #34a853;">Register New Account</button>
+        <button id="register-btn" class="success-btn">Register New Account</button>
         <p id="auth-error" style="color: red; text-align: center; font-weight: bold;"></p>
     </div>
 
-    <!-- Dashboard -->
+    <!-- Dashboard Section -->
     <div id="dashboard-section" class="hidden">
         <h2>Dashboard</h2>
-        <p style="text-align: center; font-weight: bold;">User: <span id="user-email-display" style="color: #1a73e8;"></span></p>
-        <button id="logout-btn" class="danger-btn" style="width: auto; display: block; margin: auto;">Logout</button>
-        <hr style="margin: 30px 0;">
+        <p style="text-align: center; font-weight: bold;">Logged in as: <span id="user-email-display" style="color: #1a73e8;"></span></p>
+        <button id="logout-btn" class="danger-btn" style="width: 200px; display: block; margin: auto;">Logout</button>
+        <hr style="margin: 30px 0; border: 0; border-top: 1px solid #e2e8f0;">
 
         <h3>Create New Project</h3>
-        <input type="text" id="project-name" placeholder="Enter Project Name (e.g. my-website without spaces)">
-        <button id="create-project-btn" style="background-color: #34a853;">Create Project</button>
-        
-        <div id="loading">Processing... Please wait!</div>
+        <input type="text" id="project-name" placeholder="Project Name (e.g. my-portfolio)">
+        <button id="create-project-btn" class="success-btn">Create & Initialize Project</button>
 
+        <h3>Your Hosted Websites</h3>
         <div id="projects-list">
-            <!-- Projects will dynamically appear here -->
+            <!-- Projects load here -->
         </div>
     </div>
 </div>
@@ -59,7 +73,7 @@
     import { getAuth, createUserWithEmailAndPassword, signInWithEmailAndPassword, onAuthStateChanged, signOut } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-auth.js";
     import { getFirestore, collection, addDoc, getDocs, query, where, deleteDoc, doc } from "https://www.gstatic.com/firebasejs/10.8.1/firebase-firestore.js";
 
-    // Firebase Setup
+    // Firebase Configuration
     const firebaseConfig = {
         apiKey: "AIzaSyBMfwcrtdBD3TndMkgiX0otFXVAeCsuEeY",
         authDomain: "yper-pro-web-host.firebaseapp.com",
@@ -70,8 +84,8 @@
     const auth = getAuth(app);
     const db = getFirestore(app);
 
-    // GitHub Settings (Do not share this HTML file publicly!)
-    const GITHUB_TOKEN = "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"; // Replace with a new token if revoked
+    // GitHub API Configuration
+    const GITHUB_TOKEN = "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"; 
     const GITHUB_OWNER = "hyper-pro-host";
     const GITHUB_REPO = "hyper-pro-web-host";
 
@@ -82,25 +96,41 @@
     const passwordInput = document.getElementById('password');
     const authError = document.getElementById('auth-error');
     const projectsList = document.getElementById('projects-list');
-    const loading = document.getElementById('loading');
+    const overlay = document.getElementById('overlay');
+    const loaderText = document.getElementById('loader-text');
 
     let currentUser = null;
 
+    // Show/Hide Loader Function
+    function showLoader(text) {
+        loaderText.innerText = text;
+        overlay.style.display = 'flex';
+    }
+    function hideLoader() {
+        overlay.style.display = 'none';
+    }
+
     // --- Authentication ---
     document.getElementById('register-btn').addEventListener('click', async () => {
+        showLoader("Creating account...");
         try {
             await createUserWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
             alert("Registration Successful!");
         } catch (error) { authError.innerText = error.message; }
+        hideLoader();
     });
 
     document.getElementById('login-btn').addEventListener('click', async () => {
+        showLoader("Logging in...");
         try {
             await signInWithEmailAndPassword(auth, emailInput.value, passwordInput.value);
         } catch (error) { authError.innerText = error.message; }
+        hideLoader();
     });
 
-    document.getElementById('logout-btn').addEventListener('click', () => signOut(auth));
+    document.getElementById('logout-btn').addEventListener('click', () => {
+        signOut(auth);
+    });
 
     onAuthStateChanged(auth, (user) => {
         if (user) {
@@ -116,15 +146,62 @@
         }
     });
 
-    // --- Create Project ---
-    document.getElementById('create-project-btn').addEventListener('click', async () => {
-        const projectName = document.getElementById('project-name').value.trim().toLowerCase().replace(/\s+/g, '-');
-        if (!projectName) return alert("Please enter a project name!");
+    // --- GitHub Core Upload Function (Fixes Update/Overwrite Bug) ---
+    async function uploadToGitHubAPI(filePath, base64Content, commitMessage) {
+        const apiUrl = `https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`;
+        let sha = null;
 
-        loading.style.display = 'block';
+        // 1. Check if file already exists (to get SHA for updating)
         try {
-            const liveLink = `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/${projectName}/index.html`;
+            const checkRes = await fetch(apiUrl, {
+                headers: { 'Authorization': `token ${GITHUB_TOKEN}` }
+            });
+            if (checkRes.ok) {
+                const fileData = await checkRes.json();
+                sha = fileData.sha; 
+            }
+        } catch (e) { /* File doesn't exist, which is fine */ }
+
+        // 2. Prepare payload
+        const payload = {
+            message: commitMessage,
+            content: base64Content
+        };
+        if (sha) payload.sha = sha; // Required for overwriting files
+
+        // 3. Upload File
+        const uploadRes = await fetch(apiUrl, {
+            method: 'PUT',
+            headers: {
+                'Authorization': `token ${GITHUB_TOKEN}`,
+                'Content-Type': 'application/json'
+            },
+            body: JSON.stringify(payload)
+        });
+
+        if (!uploadRes.ok) {
+            const errorData = await uploadRes.json();
+            throw new Error(errorData.message);
+        }
+    }
+
+    // --- Create Project (Now Instantly Creates Folder in GitHub) ---
+    document.getElementById('create-project-btn').addEventListener('click', async () => {
+        const projectName = document.getElementById('project-name').value.trim().toLowerCase().replace(/[^a-z0-9-]/g, '-');
+        if (!projectName) return alert("Please enter a valid project name!");
+
+        showLoader("Creating project & Initializing GitHub Folder...");
+        
+        try {
+            // 1. Upload a default index.html to GitHub to instantly create the folder
+            const defaultHtmlContent = `<!DOCTYPE html><html><head><title>${projectName}</title></head><body style="text-align:center; font-family:sans-serif; margin-top:50px;"><h1>Welcome to ${projectName}!</h1><p>Your website is live. Go to the dashboard to upload your real files.</p></body></html>`;
+            // Encode text to base64 properly
+            const base64DefaultHtml = btoa(unescape(encodeURIComponent(defaultHtmlContent))); 
             
+            await uploadToGitHubAPI(`${projectName}/index.html`, base64DefaultHtml, `Initial setup for ${projectName}`);
+
+            // 2. Save Project to Firestore
+            const liveLink = `https://${GITHUB_OWNER}.github.io/${GITHUB_REPO}/${projectName}/index.html`;
             await addDoc(collection(db, "projects"), {
                 userId: currentUser.uid,
                 name: projectName,
@@ -133,24 +210,24 @@
             });
 
             document.getElementById('project-name').value = '';
-            alert("Project Created Successfully!");
+            alert("Project Created Successfully!\nYour live link is ready. Give GitHub 1 minute to make it live.");
             loadProjects();
         } catch (e) {
             console.error(e);
-            alert("Error: Make sure Firestore Database is created in Firebase Console!");
+            alert("Error: " + e.message);
         }
-        loading.style.display = 'none';
+        hideLoader();
     });
 
     // --- Load Projects ---
     async function loadProjects() {
-        projectsList.innerHTML = '<p style="text-align:center;">Loading projects...</p>';
+        projectsList.innerHTML = '<p style="text-align:center; color:gray;">Loading projects...</p>';
         const q = query(collection(db, "projects"), where("userId", "==", currentUser.uid));
         const querySnapshot = await getDocs(q);
         
         projectsList.innerHTML = '';
         if(querySnapshot.empty) {
-            projectsList.innerHTML = '<p style="text-align:center;">No projects yet. Create one above!</p>';
+            projectsList.innerHTML = '<p style="text-align:center; color:gray;">No projects yet. Create one above!</p>';
             return;
         }
 
@@ -161,67 +238,66 @@
             const div = document.createElement('div');
             div.className = 'project-card';
             div.innerHTML = `
-                <h3 style="margin-top:0;">📁 ${project.name}</h3>
+                <h3 style="margin-top:0; color:#333;">📁 ${project.name}</h3>
                 <a href="${project.liveLink}" target="_blank" class="live-link">🌍 View Live Website</a>
                 
                 <div class="file-upload-area">
-                    <h4>Upload Website Files (HTML, CSS, JS)</h4>
-                    <p style="font-size: 12px; color: gray;">Make sure to include an <b>index.html</b> file!</p>
-                    <input type="file" id="files-${projectId}" multiple accept=".html,.css,.js,.jpg,.png">
-                    <button onclick="deployToGithub('${project.name}', '${projectId}')" style="margin-top:10px;">🚀 Deploy to Host</button>
+                    <h4 style="margin-top:0;">Upload / Update Website Files</h4>
+                    <p style="font-size: 13px; color: #555;">Select HTML, CSS, JS, Images (Must include <b>index.html</b>)</p>
+                    <input type="file" id="files-${projectId}" multiple>
+                    <button onclick="deployFiles('${project.name}', '${projectId}')" style="margin-top:10px;">🚀 Upload & Deploy to Host</button>
                 </div>
                 
-                <button class="danger-btn" onclick="deleteProject('${projectId}')" style="margin-top: 15px;">🗑 Delete Project</button>
+                <button class="danger-btn" onclick="deleteProject('${projectId}')" style="margin-top: 15px; width: auto; font-size: 14px; padding: 8px 15px;">🗑 Delete Project</button>
             `;
             projectsList.appendChild(div);
         });
     }
 
-    // --- Delete Project ---
-    window.deleteProject = async function(projectId) {
-        if(confirm("Are you sure? This will remove the project from your dashboard.")) {
-            await deleteDoc(doc(db, "projects", projectId));
-            loadProjects();
-        }
-    }
-
-    // --- GitHub Deployment Logic ---
-    window.deployToGithub = async function(projectName, projectId) {
+    // --- Deploy Files Logic ---
+    window.deployFiles = async function(projectName, projectId) {
         const fileInput = document.getElementById(`files-${projectId}`);
         if(fileInput.files.length === 0) return alert("Please select files first!");
 
-        loading.style.display = 'block';
-        loading.innerText = 'Uploading files to GitHub... Please wait!';
+        // Warn if index.html is missing
+        let hasIndexHtml = false;
+        for (let file of fileInput.files) {
+            if (file.name.toLowerCase() === 'index.html') hasIndexHtml = true;
+        }
+        if (!hasIndexHtml) {
+            if(!confirm("You didn't select an 'index.html' file. The website might not load correctly. Do you want to continue?")) return;
+        }
+
+        showLoader("Uploading files... Please do not close the window.");
 
         try {
             for (let file of fileInput.files) {
-                const base64Content = await getBase64(file);
-                const filePath = `${projectName}/${file.name}`; // Save inside project folder
+                const base64DataWithPrefix = await getBase64(file);
+                const base64Content = base64DataWithPrefix.split(',')[1]; // Remove prefix (data:image/png;base64,)
+                const filePath = `${projectName}/${file.name}`;
                 
-                // GitHub API Push Request
-                await fetch(`https://api.github.com/repos/${GITHUB_OWNER}/${GITHUB_REPO}/contents/${filePath}`, {
-                    method: 'PUT',
-                    headers: {
-                        'Authorization': `token ${GITHUB_TOKEN}`,
-                        'Content-Type': 'application/json'
-                    },
-                    body: JSON.stringify({
-                        message: `Upload ${file.name} for project ${projectName}`,
-                        content: base64Content.split(',')[1] // Get base64 data only
-                    })
-                });
+                await uploadToGitHubAPI(filePath, base64Content, `User uploaded/updated ${file.name}`);
             }
-            alert(`Deployment Successful!\nIt might take 1-2 minutes for GitHub Pages to update your live link.`);
+            alert(`✅ Deployment Successful!\n\nGitHub takes 1-2 minutes to update the live website. Refresh your live link in a minute.`);
             fileInput.value = ''; // clear input
         } catch (error) {
             console.error(error);
-            alert("Error deploying files. Check console.");
+            alert("❌ Error deploying files: " + error.message);
         }
-        loading.style.display = 'none';
-        loading.innerText = 'Processing... Please wait!';
+        hideLoader();
     }
 
-    // Helper: Convert File to Base64
+    // --- Delete Project (Deletes from Dashboard) ---
+    window.deleteProject = async function(projectId) {
+        if(confirm("Are you sure you want to delete this project?")) {
+            showLoader("Deleting project...");
+            await deleteDoc(doc(db, "projects", projectId));
+            loadProjects();
+            hideLoader();
+        }
+    }
+
+    // Helper Function: Convert File to Base64
     function getBase64(file) {
         return new Promise((resolve, reject) => {
             const reader = new FileReader();
